@@ -320,9 +320,6 @@ const BugDetailsModal = ({ bug, isOpen, onClose, size = 'normal' }) => {
                 <span className="px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700">
                   {mockData.priority} Priority
                 </span>
-                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-orange-100 text-orange-700">
-                  {mockData.severity} Severity
-                </span>
               </div>
             </div>
             <button 

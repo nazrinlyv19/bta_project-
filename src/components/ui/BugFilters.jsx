@@ -150,6 +150,7 @@ function BugFilters({
       'last_7_days': 'Last 7 days',
       'last_14_days': 'Last 14 days',
       'last_30_days': 'Last 30 days',
+      'more_than_14_days': 'More than 14 days ago',
       'more_than_30_days': 'More than 30 days ago',
     };
     activeFilters.push({ type: 'lastUpdated', label: labels[lastUpdatedFilter] || lastUpdatedFilter });
@@ -399,6 +400,7 @@ function BugFilters({
             <option value="last_7_days">Last 7 days</option>
             <option value="last_14_days">Last 14 days</option>
             <option value="last_30_days">Last 30 days</option>
+            <option value="more_than_14_days">More than 14 days ago</option>
             <option value="more_than_30_days">More than 30 days ago</option>
           </select>
         </div>

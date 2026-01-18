@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Header from '../../components/layout/Header';
 import BugDetailsModal from '../../components/ui/BugDetailsModal';
+import QAPerformanceModal from '../../components/ui/QAPerformanceModal';
 
 // Mock bugs data for quality modal
 const MOCK_QUALITY_BUGS = [
@@ -227,6 +228,7 @@ function BugStatistics() {
   const [isQualityModalOpen, setIsQualityModalOpen] = useState(false);
   const [selectedBug, setSelectedBug] = useState(null);
   const [isBugDetailsModalOpen, setIsBugDetailsModalOpen] = useState(false);
+  const [isQAPerformanceModalOpen, setIsQAPerformanceModalOpen] = useState(false);
 
   const handleQualityClick = (quality) => {
     setSelectedQuality(quality);
@@ -394,7 +396,16 @@ function BugStatistics() {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Active Bugs */}
-          <div className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm border-l-4 border-l-[#E31E24]">
+          <div 
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (timePeriod !== 'All') {
+                params.set('quartile', timePeriod);
+              }
+              navigate(`/bug-list?${params.toString()}`);
+            }}
+            className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm border-l-4 border-l-[#E31E24] cursor-pointer hover:shadow-md transition-all"
+          >
             <div className="flex justify-between items-start">
               <p className="text-gray-500 text-sm font-semibold uppercase tracking-wide">Total Active Bugs</p>
               <span className="bg-red-50 text-[#E31E24] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
@@ -433,35 +444,53 @@ function BugStatistics() {
             </div>
           </div>
 
-          {/* Total Fixed Bugs */}
-          <div className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
+          {/* QA Performance Insights */}
+          <div 
+            onClick={() => setIsQAPerformanceModalOpen(true)}
+            className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm cursor-pointer hover:shadow-md transition-all group"
+          >
             <div className="flex justify-between items-start">
-              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wide">Total Fixed Bugs</p>
-              <span className="bg-green-50 text-green-600 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                12%
-              </span>
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wide">QA Performance Insights</p>
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-[#E31E24] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
             </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-gray-900 text-3xl font-bold leading-tight">324</p>
-                <p className="text-xs text-gray-500 mt-1">This period</p>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4.5 h-4.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-[11px] font-medium text-gray-700">0 bugs opened QAs</span>
+                </div>
+                <span className="text-sm font-bold text-gray-900">12</span>
               </div>
-              <div className="flex items-end gap-1 h-8">
-                <div className="w-1.5 bg-gray-300 rounded-t-sm h-[30%]"></div>
-                <div className="w-1.5 bg-gray-300 rounded-t-sm h-[50%]"></div>
-                <div className="w-1.5 bg-gray-400 rounded-t-sm h-[40%]"></div>
-                <div className="w-1.5 bg-[#E31E24]/40 rounded-t-sm h-[70%]"></div>
-                <div className="w-1.5 bg-[#E31E24]/60 rounded-t-sm h-[60%]"></div>
-                <div className="w-1.5 bg-[#E31E24] rounded-t-sm h-[85%]"></div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4.5 h-4.5 text-[#E31E24]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="text-[11px] font-medium text-gray-700">High reject count QAs</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#E31E24]">3</span>
+                  <svg className="w-3.5 h-3.5 text-[#E31E24] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Stale Bugs */}
-          <div className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
+          <div 
+            onClick={() => {
+              const params = new URLSearchParams();
+              params.set('lastUpdated', 'more_than_14_days');
+              navigate(`/bug-list?${params.toString()}`);
+            }}
+            className="flex flex-col justify-between gap-4 rounded-xl bg-white border border-gray-200 p-5 shadow-sm cursor-pointer hover:shadow-md transition-all"
+          >
             <div className="flex justify-between items-start">
               <p className="text-gray-500 text-sm font-semibold uppercase tracking-wide">Stale Bugs</p>
               <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -727,6 +756,13 @@ function BugStatistics() {
         isOpen={isBugDetailsModalOpen}
         onClose={handleCloseBugDetailsModal}
         size="small"
+      />
+
+      {/* QA Performance Modal */}
+      <QAPerformanceModal
+        isOpen={isQAPerformanceModalOpen}
+        onClose={() => setIsQAPerformanceModalOpen(false)}
+        timePeriod={timePeriod === 'All' ? 'Last 30 Days' : timePeriod}
       />
     </div>
   );

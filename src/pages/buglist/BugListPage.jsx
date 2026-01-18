@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ChartBarIcon,
@@ -16,6 +16,12 @@ function BugListPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTribe, setSelectedTribe] = useState('All Tribes');
+  
+  // Read URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    // URL params will be passed to BugList component
+  }, [location.search]);
 
   const handleLogout = () => {
     navigate('/');
@@ -114,7 +120,12 @@ function BugListPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto mt-16">
-          <BugList searchQuery={searchQuery} selectedTribe={selectedTribe} sidebarOpen={sidebarOpen} />
+          <BugList 
+            searchQuery={searchQuery} 
+            selectedTribe={selectedTribe} 
+            sidebarOpen={sidebarOpen}
+            initialFilters={Object.fromEntries(new URLSearchParams(location.search))}
+          />
         </div>
       </main>
     </div>

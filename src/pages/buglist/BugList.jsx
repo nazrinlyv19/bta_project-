@@ -41,7 +41,7 @@ const MOCK_BUGS = [
   { id: 'BUG-2510', title: 'Notification system integration testing', tribe: 'Core Banking', squad: 'Core', status: 'TESTING', priority: 'high', qualityScore: 85, reporter: 'Chris B.', assignee: 'Sabina M.', createdAt: '2023-11-13', updatedAt: '2023-11-14' },
 ];
 
-function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen = true }) {
+function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen = true, initialFilters = {} }) {
   const contentPadding = 'px-6 sm:px-8 lg:px-10';
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,18 +58,21 @@ function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen =
     setSelectedBug(null);
   };
   
-  // Filter states
-  const [createdDateFilter, setCreatedDateFilter] = useState('');
-  const [customDateFrom, setCustomDateFrom] = useState('');
-  const [customDateTo, setCustomDateTo] = useState('');
-  const [lastUpdatedFilter, setLastUpdatedFilter] = useState('');
-  const [selectedSquads, setSelectedSquads] = useState([]);
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
-  const [selectedPriorities, setSelectedPriorities] = useState([]);
-  const [selectedReporter, setSelectedReporter] = useState('');
-  const [selectedAssignee, setSelectedAssignee] = useState('');
-  const [selectedQualityScore, setSelectedQualityScore] = useState('');
+  // Filter states - initialize from URL params if provided
+  const [createdDateFilter, setCreatedDateFilter] = useState(initialFilters.createdDate || '');
+  const [customDateFrom, setCustomDateFrom] = useState(initialFilters.customDateFrom || '');
+  const [customDateTo, setCustomDateTo] = useState(initialFilters.customDateTo || '');
+  const [lastUpdatedFilter, setLastUpdatedFilter] = useState(initialFilters.lastUpdated || '');
+  const [selectedSquads, setSelectedSquads] = useState(initialFilters.squads ? initialFilters.squads.split(',') : []);
+  const [selectedStatuses, setSelectedStatuses] = useState(initialFilters.statuses ? initialFilters.statuses.split(',') : []);
+  const [selectedPriorities, setSelectedPriorities] = useState(initialFilters.priorities ? initialFilters.priorities.split(',') : []);
+  const [selectedReporter, setSelectedReporter] = useState(initialFilters.reporter || '');
+  const [selectedAssignee, setSelectedAssignee] = useState(initialFilters.assignee || '');
+  const [selectedQualityScore, setSelectedQualityScore] = useState(initialFilters.qualityScore || '');
   const [sortOrder, setSortOrder] = useState('newest-first'); // 'newest-first' or 'oldest-first'
+  
+  // Handle quartile filter from URL
+  const quartileFilter = initialFilters.quartile;
 
   // Get all unique values for filters
   const allSquads = useMemo(() => [...new Set(MOCK_BUGS.map(bug => bug.squad))].sort(), []);
@@ -80,6 +83,42 @@ function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen =
   // Filter bugs
   const filteredBugs = useMemo(() => {
     let result = [...MOCK_BUGS];
+
+    // Quartile filter - filter by created date based on quartile
+    if (quartileFilter) {
+      const today = new Date('2023-11-24');
+      const currentYear = today.getFullYear();
+      let startDate, endDate;
+      
+      switch (quartileFilter) {
+        case 'Q1':
+          startDate = new Date(currentYear, 0, 1); // Jan 1
+          endDate = new Date(currentYear, 2, 31); // Mar 31
+          break;
+        case 'Q2':
+          startDate = new Date(currentYear, 3, 1); // Apr 1
+          endDate = new Date(currentYear, 5, 30); // Jun 30
+          break;
+        case 'Q3':
+          startDate = new Date(currentYear, 6, 1); // Jul 1
+          endDate = new Date(currentYear, 8, 30); // Sep 30
+          break;
+        case 'Q4':
+          startDate = new Date(currentYear, 9, 1); // Oct 1
+          endDate = new Date(currentYear, 11, 31); // Dec 31
+          break;
+        default:
+          startDate = null;
+          endDate = null;
+      }
+      
+      if (startDate && endDate) {
+        result = result.filter(bug => {
+          const createdDate = new Date(bug.createdAt);
+          return createdDate >= startDate && createdDate <= endDate;
+        });
+      }
+    }
 
     // Tribe filter - filter by selected tribe
     if (selectedTribe && selectedTribe !== 'All Tribes') {
@@ -160,6 +199,8 @@ function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen =
             return daysDiff <= 14;
           case 'last_30_days':
             return daysDiff <= 30;
+          case 'more_than_14_days':
+            return daysDiff > 14;
           case 'more_than_30_days':
             return daysDiff > 30;
           default:
@@ -212,7 +253,7 @@ function BugList({ searchQuery = '', selectedTribe = 'All Tribes', sidebarOpen =
     }
 
     return result;
-  }, [selectedTribe, searchQuery, createdDateFilter, customDateFrom, customDateTo, lastUpdatedFilter, selectedSquads, selectedStatuses, selectedPriorities, selectedReporter, selectedAssignee, selectedQualityScore]);
+  }, [quartileFilter, selectedTribe, searchQuery, createdDateFilter, customDateFrom, customDateTo, lastUpdatedFilter, selectedSquads, selectedStatuses, selectedPriorities, selectedReporter, selectedAssignee, selectedQualityScore]);
 
   // Sort bugs by date
   const sortedBugs = useMemo(() => {
